@@ -3,9 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Plugin Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/TheMizeGuy/typescript-senior-review/releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2.svg)](https://claude.com/claude-code)
-[![Model](https://img.shields.io/badge/model-Opus%204.6-orange.svg)](https://www.anthropic.com/claude)
+[![Model](https://img.shields.io/badge/model-Fable%205-orange.svg)](https://www.anthropic.com/claude)
 
-A [Claude Code](https://claude.com/claude-code) plugin that dispatches an **Opus 4.6** senior TypeScript developer agent to review your code across **18 angles** — quality, type-system correctness, architecture, maintainability, security, performance, error handling, testing, modern feature adoption, and ecosystem fit.
+A [Claude Code](https://claude.com/claude-code) plugin that dispatches an **Fable 5** senior TypeScript developer agent to review your code across **18 angles** — quality, type-system correctness, architecture, maintainability, security, performance, error handling, testing, modern feature adoption, and ecosystem fit.
 
 The reviewer is a fresh-context subagent with strict **read-only** tool access. Findings come back severity-tagged with concrete code rewrites, file:line locations, and citations. The orchestrator presents the report and asks which findings to apply — nothing is auto-fixed without your explicit selection.
 
@@ -15,7 +15,7 @@ When you invoke the `review-typescript` skill (or ask Claude to review your Type
 
 1. **Scope resolution** — single file, directory, git diff, staged, PR diff, or whole project
 2. **Project context gathering** — `tsconfig.json` strictness flags, configured linter, framework, key deps
-3. **Agent dispatch** — fresh-context Opus 4.6 subagent with read-only tools (`Read`, `Grep`, `Glob`, `Bash`, optional MCP tools)
+3. **Agent dispatch** — fresh-context Fable 5 subagent with read-only tools (`Read`, `Grep`, `Glob`, `Bash`, optional MCP tools)
 4. **The agent** reads your code, runs `tsc --noEmit` and your linter, reviews against the 18 angles, and returns findings in a strict format
 5. **Present results** — the orchestrator displays the verbatim report and asks which findings you want applied
 
@@ -108,7 +108,7 @@ Each finding follows this exact template:
 | Type | Name | Purpose |
 |---|---|---|
 | Skill | `review-typescript` | User-invoked entry point; gathers scope and dispatches the agent |
-| Agent | `senior-typescript-reviewer` | Opus 4.6 reviewer that reads code, runs tooling, returns findings |
+| Agent | `senior-typescript-reviewer` | Fable 5 reviewer that reads code, runs tooling, returns findings |
 
 ## Tool access
 
@@ -140,7 +140,7 @@ None are required. The plugin is tested to work without them.
 This used to be tempting to build as a standalone skill (469-line instructions loaded inline into your conversation). Two reasons for the plugin / orchestrator + subagent pattern instead:
 
 1. **Fresh context** — the reviewer runs in an isolated subagent that has never seen the conversation that wrote the code. No pattern blindness.
-2. **Forced model** — the agent is pinned to `model: opus`. Your main session can be on any model; the reviewer is always Opus 4.6.
+2. **Forced model** — the agent is pinned to `model: fable`. Your main session can be on any model; the reviewer is always Fable 5.
 3. **Read-only enforcement** — the agent has Read but not Edit/Write. Impossible to "accidentally fix" code mid-review.
 
 ## License
@@ -149,4 +149,4 @@ MIT. See [LICENSE](LICENSE).
 
 ## Credits
 
-Built by [mize](https://github.com/TheMizeGuy). Backed by the [Claude Code](https://claude.com/claude-code) plugin system and Anthropic's Opus 4.6 model.
+Built by [mize](https://github.com/TheMizeGuy). Backed by the [Claude Code](https://claude.com/claude-code) plugin system and Anthropic's Fable 5 model.
