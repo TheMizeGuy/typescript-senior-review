@@ -65,7 +65,7 @@ PROJECT CONTEXT:
 - Test runner: <vitest/jest/bun/node-test/none>
 - Key deps: <react@19.0, zod@4.0.0, fastify@5.x, etc — only the relevant ones>
 
-KNOWLEDGE BASE: /Users/appleseed/Claude/vault/TypeScript/ (19 files). Read the index first, then the files relevant to this scope. GoodMem Learnings space: <your-goodmem-learnings-space-id>.
+KNOWLEDGE BASE (if configured): <your vault path>/TypeScript/ (~19 files). Read the index first, then the files relevant to this scope. GoodMem Learnings space: <your-goodmem-learnings-space-id>.
 
 TASK:
 1. Read every file in scope completely.
@@ -132,7 +132,7 @@ When the agent returns:
 - The reviewer is a fresh-context agent running on the session model. It does NOT see this conversation. Everything it needs goes in the dispatch prompt.
 - The agent has Read, Grep, Glob, Bash, GoodMem retrieve, Context7, WebSearch, WebFetch, TodoWrite. It does NOT have Edit/Write/Agent — by design, so it can't make changes or recursively dispatch.
 - If the user runs the skill twice on the same code, dispatch fresh agents both times — they're stateless.
-- Vault files live at `/Users/appleseed/Claude/vault/TypeScript/`. If the user doesn't have that directory, the agent will still work but won't cite vault files.
+- Vault files live wherever the dispatch prompt points (e.g. `<your vault path>/TypeScript/`). If the user doesn't have that directory, the agent will still work but won't cite vault files.
 
 ## When to skip parts of the workflow
 
