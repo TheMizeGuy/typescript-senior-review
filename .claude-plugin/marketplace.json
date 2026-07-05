@@ -1,17 +1,18 @@
 {
   "name": "typescript-senior-review",
   "metadata": {
-    "description": "Senior TypeScript developer code review plugin for Claude Code. Dispatches an Opus 4.6 subagent that reviews TS code across 18 angles \u2014 quality, type-system correctness, architecture, security, performance, error handling, modern feature adoption \u2014 and returns severity-tagged findings with concrete rewrites."
+    "description": "Senior TypeScript developer code review plugin for Claude Code. Dispatches a subagent, running on the session model (always the strongest available Claude), that reviews TS code across 18 angles \u2014 quality, type-system correctness, architecture, security, performance, error handling, modern feature adoption \u2014 and returns severity-tagged findings with concrete rewrites."
   },
   "owner": {
-    "name": "mize"
+    "name": "TheMizeGuy",
+    "email": "ben@meipath.com"
   },
   "plugins": [
     {
       "name": "typescript-senior-review",
-      "description": "Comprehensive TypeScript code review by an Opus 4.6 senior-developer agent. Reviews quality, type-system correctness, architecture, maintainability, security, performance, error handling, testing, modern feature adoption, and ecosystem fit across 18 angles. Returns severity-tagged findings with concrete code rewrites.",
+      "description": "Comprehensive TypeScript code review by a senior-developer agent, running on the session model (always the strongest available Claude). Reviews quality, type-system correctness, architecture, maintainability, security, performance, error handling, testing, modern feature adoption, and ecosystem fit across 18 angles. Returns severity-tagged findings with concrete code rewrites.",
       "source": "./typescript-senior-review",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "code-review",
       "keywords": [
         "typescript",

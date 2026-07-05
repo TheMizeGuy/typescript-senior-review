@@ -1,14 +1,18 @@
 ---
 name: review-typescript
 description: |-
-  Use this skill when the user asks for a TypeScript code review, says "review my TS code", "check this TypeScript file", "audit this TS", "find issues in my .ts files", or wants a comprehensive senior-developer review covering quality, security, architecture, performance, error handling, or maintainability of TypeScript files. Also use proactively after the user finishes writing a substantial TypeScript feature or before opening a PR. Dispatches the typescript-senior-review:senior-typescript-reviewer agent (Fable 5) which uses the local TypeScript vault and runs project tooling for evidence-based findings.
+  Use this skill when the user asks for a TypeScript code review, says "review my TS code", "check this TypeScript file", "audit this TS", "find issues in my .ts files", or wants a comprehensive senior-developer review covering quality, security, architecture, performance, error handling, or maintainability of TypeScript files. Also use proactively after the user finishes writing a substantial TypeScript feature or before opening a PR. Dispatches the typescript-senior-review:senior-typescript-reviewer agent, running on the session model, which uses the local TypeScript vault and runs project tooling for evidence-based findings.
 argument-hint: '[path | file | "staged" | "diff" | "pr" | "all"]'
 allowed-tools: Bash, Read, Grep, Glob, TodoWrite, Agent
 ---
 
 # TypeScript Senior Review
 
-You are coordinating a senior TypeScript code review on the user's behalf. Your job is to determine the scope of files to review, gather project context, and dispatch the `typescript-senior-review:senior-typescript-reviewer` agent (Fable 5) which does the actual review.
+You are coordinating a senior TypeScript code review on the user's behalf. Your job is to determine the scope of files to review, gather project context, and dispatch the `typescript-senior-review:senior-typescript-reviewer` agent, running on the session model (always the strongest available Claude), which does the actual review.
+
+## Execution mode
+
+The reviewer agent inherits the session model — never a pinned or named model. If the session model is already the strongest available tier and the review scope is small or the finding is time-critical, the orchestrator may run the review inline in the main context (foreground) instead of dispatching a subagent. Never block on, or wait for, a specific model to become available — dispatch (or run inline) with whatever the session model is. This does not change the reviewer's read-only, no-Edit/Write/Agent isolation guarantee.
 
 ## Step 1: Determine scope
 
@@ -61,7 +65,7 @@ PROJECT CONTEXT:
 - Test runner: <vitest/jest/bun/node-test/none>
 - Key deps: <react@19.0, zod@4.0.0, fastify@5.x, etc — only the relevant ones>
 
-KNOWLEDGE BASE: ~/Claude/vault/TypeScript/ (19 files). Read the index first, then the files relevant to this scope. GoodMem Learnings space: <your-goodmem-learnings-space-id>.
+KNOWLEDGE BASE: /Users/appleseed/Claude/vault/TypeScript/ (19 files). Read the index first, then the files relevant to this scope. GoodMem Learnings space: <your-goodmem-learnings-space-id>.
 
 TASK:
 1. Read every file in scope completely.
@@ -79,6 +83,13 @@ CONSTRAINTS:
 - Don't manufacture findings to look thorough. Signal > noise.
 - If code is fine, say so explicitly with a one-line "no findings" entry.
 - Don't use AI slop, hedges, or emojis.
+
+ACCEPTANCE CRITERIA (the report is rejected unless all hold):
+- Every finding uses the full template: [SEVERITY] [Category] title, File with line range, Issue, Why it matters, Current code, Suggested rework, Reference.
+- Every CRITICAL/HIGH names a concrete failure scenario (input or state -> wrong behavior).
+- Summary block counts match the finding list; verdict line present and consistent with the counts.
+- Tooling line reports tsc / eslint / biome each as PASS, FAIL, or N/A with a reason.
+- Zero hedged findings; zero findings lacking either a vault citation or an explicit "Not in vault" note.
 ```
 
 ## Step 4: Dispatch the agent
@@ -93,6 +104,8 @@ Use the Agent tool with these arguments:
 ## Step 5: Present results
 
 When the agent returns:
+
+0. **Gate the report before presenting.** Check it against the ACCEPTANCE CRITERIA from the dispatch prompt: template compliance on every finding, count arithmetic in the summary block, failure scenarios on every CRITICAL/HIGH, tooling PASS/FAIL/N/A line, citations. If it fails, re-dispatch ONCE with the specific defects named (e.g. "finding 4 lacks a failure scenario; summary says 3 HIGH but the list has 2"), then present whatever the second attempt returns, flagging any residual defects to the user. Never silently rewrite the agent's findings.
 
 1. Display the agent's full report verbatim. Do not summarize, condense, or reformat. The user wants the raw output.
 
@@ -110,17 +123,16 @@ When the agent returns:
 
 4. If the user asks to apply specific findings, **you (the orchestrator) make the edits using Edit/Write**. Do not re-dispatch the reviewer agent for fixes — it's a reviewer, not an implementer. Apply each requested finding's "Suggested rework" to the indicated file:line.
 
-5. After applying any fixes, offer:
+5. After applying any fixes, verify before claiming done: run `tsc --noEmit` and the configured linter on the touched files and show the output. Do not report fixes as applied while either fails — show the failure and ask how to proceed. Then offer:
    - Re-run the review on the same scope to verify nothing regressed
-   - Run `tsc --noEmit` and the linter to confirm fixes compile and lint clean
    - Write a learning to GoodMem if a non-obvious gotcha came up during the review
 
 ## Notes on agent behavior
 
-- The reviewer is a fresh-context Fable 5 agent. It does NOT see this conversation. Everything it needs goes in the dispatch prompt.
+- The reviewer is a fresh-context agent running on the session model. It does NOT see this conversation. Everything it needs goes in the dispatch prompt.
 - The agent has Read, Grep, Glob, Bash, GoodMem retrieve, Context7, WebSearch, WebFetch, TodoWrite. It does NOT have Edit/Write/Agent — by design, so it can't make changes or recursively dispatch.
 - If the user runs the skill twice on the same code, dispatch fresh agents both times — they're stateless.
-- Vault files live at `~/Claude/vault/TypeScript/`. If the user doesn't have that directory, the agent will still work but won't cite vault files.
+- Vault files live at `/Users/appleseed/Claude/vault/TypeScript/`. If the user doesn't have that directory, the agent will still work but won't cite vault files.
 
 ## When to skip parts of the workflow
 
