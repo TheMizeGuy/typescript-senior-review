@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.0] - 2026-07-06
+
+### Changed
+
+- Adopted the tsgo / TypeScript 7 standard: `tsgo --noEmit` (`@typescript/native-preview`) is the one typecheck gate the reviewer runs and the gate suggested reworks must pass; `tsc --noEmit` demoted to a per-review fallback on projects without tsgo, where the reviewer now records a MEDIUM adoption finding. tsc stays only in the emit/tooling lane (`.d.ts` builds, ts-jest, Stryker) -- dual-compiler, not a swap.
+- Report tooling line renamed to `typecheck(tsgo|tsc)=...` in the agent template, skill acceptance criteria, and README example.
+- Skill pre-flight now detects the project's typecheck gate (tsgo / tsc-only / none) and passes it in PROJECT CONTEXT.
+- Knowledge-base tables now list reference files 17 and 18 (TS 6/7 Migration Playbook; TS7 Native Compiler and Tooling Compatibility); added a "Typecheck gate / TS7 readiness" scope row.
+- README: added a "TypeScript 7 / tsgo standard" section and a tsgo-adoption troubleshooting row.
+
 ## [0.1.1] - 2026-07-05
 
 ### Changed

@@ -1,7 +1,7 @@
 {
   "name": "typescript-senior-review",
   "metadata": {
-    "description": "Senior TypeScript developer code review plugin for Claude Code. Dispatches a subagent, running on the session model (always the strongest available Claude), that reviews TS code across 18 angles \u2014 quality, type-system correctness, architecture, security, performance, error handling, modern feature adoption \u2014 and returns severity-tagged findings with concrete rewrites."
+    "description": "Senior TypeScript developer code review plugin for Claude Code. Dispatches a subagent, running on the session model (always the strongest available Claude), that reviews TS code across 18 angles — quality, type-system correctness, architecture, security, performance, error handling, modern feature adoption — and returns severity-tagged findings with concrete rewrites."
   },
   "owner": {
     "name": "TheMizeGuy",
@@ -10,9 +10,9 @@
   "plugins": [
     {
       "name": "typescript-senior-review",
-      "description": "Comprehensive TypeScript code review by a senior-developer agent, running on the session model (always the strongest available Claude). Reviews quality, type-system correctness, architecture, maintainability, security, performance, error handling, testing, modern feature adoption, and ecosystem fit across 18 angles. Returns severity-tagged findings with concrete code rewrites.",
+      "description": "Comprehensive TypeScript code review by a senior-developer agent, running on the session model (always the strongest available Claude), backed by a 19-file local TypeScript knowledge base. Reviews quality, type-system correctness, architecture, maintainability, security, performance, error handling, testing, modern feature adoption, and ecosystem fit. Verifies with the tsgo (TypeScript 7) type gate. Returns severity-tagged findings with concrete code rewrites and vault citations.",
       "source": "./typescript-senior-review",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "category": "code-review",
       "keywords": [
         "typescript",
