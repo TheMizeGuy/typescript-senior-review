@@ -1,5 +1,27 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Retargeted the reviewer's TypeScript 7 standard from the retired preview channel to the GA release.
+  TypeScript 7.0 shipped 2026-07-08 as `typescript@7` with `tsc` as its only binary; the
+  `@typescript/native-preview` package and its `tsgo` binary were abandoned after
+  `7.0.0-dev.20260707.2` (2026-07-07). The reviewer previously ran `npx tsgo --noEmit` and recorded a
+  MEDIUM finding urging every reviewed project to install that dead package.
+  - Gate is now `node node_modules/ts7/bin/tsc --noEmit` (GA TS7 under the `ts7` npm alias,
+    `"ts7": "npm:typescript@~7.0.2"`); the fallback is `node node_modules/typescript/bin/tsc --noEmit`.
+    Both by explicit path -- each package declares a `tsc` bin and npm's link order on the collision is
+    not guaranteed, so a bare `tsc` can run the wrong compiler.
+  - The dual-compiler rationale is corrected: `typescript` 6.x stays because TS 7.0 ships no
+    programmatic compiler API (7.1 is expected to), so ts-jest / typescript-eslint / Stryker / tsserver
+    still need it -- not because the gate has a different binary name.
+  - Finding `tsgo` or `@typescript/native-preview` in a reviewed project is now itself a HIGH finding.
+  - Report tooling line is `typecheck(ts7|ts6)=...`; skill pre-flight gate detection gains a
+    "retired tsgo channel" state; README section retitled "TypeScript 7 standard"; agent, skill, and
+    manifests (keyword `tsgo` -> `typescript-7`) updated to match.
+  - The 0.2.0 entry below is left as written and is superseded by this entry.
+
 ## [0.2.0] - 2026-07-06
 
 ### Changed

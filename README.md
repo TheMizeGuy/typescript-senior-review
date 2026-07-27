@@ -15,7 +15,7 @@ When you invoke the `review-typescript` skill (or ask Claude to review your Type
 1. **Scope resolution** — single file, directory, git diff, staged, PR diff, or whole project
 2. **Project context gathering** — `tsconfig.json` strictness flags, configured linter, framework, key deps
 3. **Agent dispatch** — fresh-context subagent, running on the session model, with read-only tools (`Read`, `Grep`, `Glob`, `Bash`, optional MCP tools)
-4. **The agent** reads your code, runs the typecheck gate (`tsgo --noEmit`, the TypeScript 7 native gate — `tsc --noEmit` only where tsgo isn't installed) and your linter, reviews against the 18 angles, and returns findings in a strict format
+4. **The agent** reads your code, runs the typecheck gate (`node node_modules/ts7/bin/tsc --noEmit`, the GA TypeScript 7 gate — the TS6 binary only where TS7 isn't installed) and your linter, reviews against the 18 angles, and returns findings in a strict format
 5. **Present results** — the orchestrator displays the verbatim report and asks which findings you want applied
 
 ## Installation
@@ -52,13 +52,13 @@ A concrete run, start to finish:
 1. Install the plugin (see Installation above) and restart Claude Code.
 2. Finish a TypeScript change, then ask "review my auth changes before I open the PR" — or invoke directly: `/typescript-senior-review:review-typescript diff`.
 3. The `review-typescript` skill resolves scope (for `diff`, that's `git diff --name-only HEAD` filtered to `.ts`/`.tsx`/`.cts`/`.mts`), reads your `tsconfig.json`, linter config, and `package.json`, then dispatches `senior-typescript-reviewer` with all of that context in one self-contained prompt.
-4. The agent reads every file in scope, consults its knowledge base (if configured) and any GoodMem Learnings, runs your typecheck gate (`tsgo --noEmit`, or `tsc --noEmit` where tsgo is absent) and your linter when available, and returns a report shaped like:
+4. The agent reads every file in scope, consults its knowledge base (if configured) and any GoodMem Learnings, runs your typecheck gate (`node node_modules/ts7/bin/tsc --noEmit`, or the TS6 binary where TS7 is absent) and your linter when available, and returns a report shaped like:
 
    ```
    ## TypeScript Senior Review
 
    **Scope:** 3 files reviewed
-   **Tooling run:** typecheck(tsgo)=FAIL, eslint=PASS, biome=N/A
+   **Tooling run:** typecheck(ts7)=FAIL, eslint=PASS, biome=N/A
    **Findings:** 1 CRITICAL, 2 HIGH, 3 MEDIUM, 1 LOW, 0 NIT
    **Verdict:** fix HIGH+ before merge
 
@@ -73,12 +73,16 @@ A concrete run, start to finish:
 5. Claude shows you the full report verbatim, then asks which findings to apply (`all CRITICAL`, `finding 3`, `everything in stripe.ts`, `skip`).
 6. If you request fixes, Claude — not the reviewer agent — edits the named files, then re-runs the typecheck gate and the linter on the touched files before confirming anything is fixed.
 
-## TypeScript 7 / tsgo standard
+## TypeScript 7 standard
 
-The reviewer treats tsgo (`@typescript/native-preview`, the TypeScript 7 native compiler) as the one typecheck gate:
+TypeScript 7.0 went GA on 2026-07-08. The Go-native compiler ships as `typescript@7` itself, with `tsc` as its only binary; the `@typescript/native-preview` package and its `tsgo` binary were the preview channel and were abandoned after `7.0.0-dev.20260707.2` (2026-07-07). The reviewer treats GA TS7 as the one typecheck gate:
 
-- On projects that have adopted tsgo, `npx tsgo --noEmit` is the gate the review runs and the gate every suggested rework must pass. `tsc` belongs to the emit/tooling lane only (`.d.ts` builds via `tsc -b`, ts-jest, Stryker) — dual-compiler, not a swap.
-- On projects still gating with `tsc --noEmit`, the review falls back to tsc for that run and reports tsgo adoption as a finding (install `@typescript/native-preview`, map `npm run typecheck` to `tsgo --noEmit`).
+- The recommended shape installs both compilers under distinct names — `"ts7": "npm:typescript@~7.0.2"` for the gate, `typescript` `^6.0.3` for the emit/tooling lane — because TS 7.0 ships no programmatic compiler API (7.1 is expected to), so ts-jest, typescript-eslint, Stryker, and tsserver still need 6.x. Dual-compiler, not a swap.
+- Both are invoked by explicit path (`node node_modules/ts7/bin/tsc`, `node node_modules/typescript/bin/tsc`). Each package declares a `tsc` bin and npm's link order on that collision is not guaranteed, so a bare `tsc` can silently run the wrong compiler.
+- Finding `tsgo` or `@typescript/native-preview` in a project is itself a finding: it is pinned to a dev nightly of a dead channel. The replacement is the `ts7` alias above.
+
+- On projects that have adopted TS7, `node node_modules/ts7/bin/tsc --noEmit` is the gate the review runs and the gate every suggested rework must pass.
+- On projects still gating with the TS6 binary, the review falls back to it for that run and reports TS7 adoption as a finding.
 
 ## Troubleshooting
 
@@ -88,7 +92,7 @@ The reviewer treats tsgo (`@typescript/native-preview`, the TypeScript 7 native 
 | "resolved file list is empty" | Scope argument resolved to nothing — no staged/uncommitted TS changes, or wrong path | Pass an explicit file or directory, or use `all` |
 | Findings never cite a knowledge-base file | No local TypeScript reference docs at the path given to the agent | Point the agent at your own notes directory in the dispatch prompt, or ignore it — reviews still run without one |
 | `Tooling run: typecheck=N/A` or `eslint=N/A` | No `tsconfig.json` or linter config found from the project root | Add the missing config, or accept a static-only review |
-| Typecheck ran `tsc`, not `tsgo` | Project hasn't adopted the tsgo gate | `npm i -D @typescript/native-preview`, map `npm run typecheck` to `tsgo --noEmit`; the reviewer flags this as a finding |
+| Typecheck ran the TS6 binary, not TS7 | Project hasn't adopted the TS7 gate | `npm i -D ts7@npm:typescript@~7.0.2`, map `npm run typecheck` to `node node_modules/ts7/bin/tsc --noEmit`; the reviewer flags this as a finding |
 | GoodMem-sourced context never appears in findings | GoodMem MCP isn't installed or configured for this session | Optional dependency — configure it, or ignore; the agent still runs without it |
 | Plugin doesn't show up after cloning | Claude Code wasn't restarted, or marketplace/plugin weren't added in order | Re-run the install steps above in order, restart Claude Code, confirm with `claude plugin list` |
 
@@ -163,7 +167,7 @@ The agent is **read-only by design**. It has:
 | Tool | Purpose |
 |---|---|
 | `Read`, `Grep`, `Glob` | Read source files, search patterns |
-| `Bash` | Run `tsgo --noEmit` (tsc fallback), `eslint`, `biome check` |
+| `Bash` | Run `node node_modules/ts7/bin/tsc --noEmit` (TS6 fallback), `eslint`, `biome check` |
 | `TodoWrite` | Track findings during long reviews |
 | `WebSearch`, `WebFetch` | Verify against latest ecosystem state |
 | `mcp__context7__resolve-library-id`, `mcp__context7__query-docs` (optional) | Live library docs if a [Context7](https://context7.com/) MCP server is configured |

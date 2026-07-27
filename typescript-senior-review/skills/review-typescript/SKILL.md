@@ -39,7 +39,7 @@ Gather these in a single message with parallel tool calls:
 
 1. **tsconfig.json** — Read it (or the closest one walking up from the first file). Note: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `module`, `moduleResolution`, `target`.
 2. **Linter config** — Glob for `eslint.config.{js,mjs,ts}`, `.eslintrc*`, `biome.json`, `biome.jsonc`. Note which is configured.
-3. **package.json** — Read it. Note: framework (`react`, `next`, `fastify`, `hono`, `nest`, `vue`, `svelte`, etc.), `type: "module"`, key dependencies, scripts (`lint`, `typecheck`, `test`), and the typecheck gate: tsgo (`@typescript/native-preview` in devDependencies or a `typecheck` script invoking `tsgo`) vs tsc-only vs none.
+3. **package.json** — Read it. Note: framework (`react`, `next`, `fastify`, `hono`, `nest`, `vue`, `svelte`, etc.), `type: "module"`, key dependencies, scripts (`lint`, `typecheck`, `test`), and the typecheck gate: GA TS7 (a `ts7` alias in devDependencies, or a `typecheck` script invoking `node node_modules/ts7/bin/tsc`) vs TS6-only vs none vs the retired `tsgo` / `@typescript/native-preview` preview channel (itself a finding).
 4. **Workspace root** — Run `git rev-parse --show-toplevel` (Bash) so you have an absolute project root.
 
 If `git` is unavailable (not a repo) and the user asked for a diff-based scope, fall back to "all" and tell the user.
@@ -60,7 +60,7 @@ PROJECT CONTEXT:
 - tsconfig strictness: strict=<bool>, noUncheckedIndexedAccess=<bool>, exactOptionalPropertyTypes=<bool>, verbatimModuleSyntax=<bool>
 - Module: <module value> + <moduleResolution value>
 - Target: <target value>
-- Typecheck gate: <tsgo / tsc-only / none>
+- Typecheck gate: <TS7 / TS6-only / none / retired tsgo channel>
 - Linter: <eslint flat config / eslint legacy / biome / none>
 - Package manager: <pnpm/npm/yarn/bun based on lockfile>
 - Test runner: <vitest/jest/bun/node-test/none>
@@ -72,7 +72,7 @@ TASK:
 1. Read every file in scope completely.
 2. Read the relevant vault files (match scope to vault per your system prompt's table).
 3. Search GoodMem Learnings for prior gotchas relevant to the libraries/patterns you see.
-4. Run the typecheck gate if a tsconfig is present and the project allows it: `cd <root> && npx tsgo --noEmit` (the TypeScript 7 native gate — the standard). Where tsgo is absent, run `npx tsc --noEmit` instead and flag tsgo adoption as a finding. Capture errors.
+4. Run the typecheck gate if a tsconfig is present and the project allows it: `cd <root> && node node_modules/ts7/bin/tsc --noEmit` (the GA TypeScript 7 gate — the standard). Invoke by path, never bare `tsc`: both `ts7` and `typescript` declare a `tsc` bin and npm's link order on the collision is not guaranteed. Where TS7 is absent, run `node node_modules/typescript/bin/tsc --noEmit` instead and flag TS7 adoption as a finding. Capture errors.
 5. Run the configured linter (`eslint` or `biome check`) on the in-scope files. Capture errors.
 6. Review across all relevant angles per your system prompt (18-row table).
 7. Return findings in the strict format from your system prompt: severity-tagged, with file:line, current code, suggested rework, vault citation.
@@ -89,7 +89,7 @@ ACCEPTANCE CRITERIA (the report is rejected unless all hold):
 - Every finding uses the full template: [SEVERITY] [Category] title, File with line range, Issue, Why it matters, Current code, Suggested rework, Reference.
 - Every CRITICAL/HIGH names a concrete failure scenario (input or state -> wrong behavior).
 - Summary block counts match the finding list; verdict line present and consistent with the counts.
-- Tooling line reports the typecheck gate (tsgo, or tsc where tsgo is absent) / eslint / biome each as PASS, FAIL, or N/A with a reason.
+- Tooling line reports the typecheck gate (ts7, or ts6 where TS7 is absent) / eslint / biome each as PASS, FAIL, or N/A with a reason.
 - Zero hedged findings; zero findings lacking either a vault citation or an explicit "Not in vault" note.
 ```
 
@@ -124,7 +124,7 @@ When the agent returns:
 
 4. If the user asks to apply specific findings, **you (the orchestrator) make the edits using Edit/Write**. Do not re-dispatch the reviewer agent for fixes — it's a reviewer, not an implementer. Apply each requested finding's "Suggested rework" to the indicated file:line.
 
-5. After applying any fixes, verify before claiming done: run the project's typecheck gate (`tsgo --noEmit`; `tsc --noEmit` only where tsgo is absent) and the configured linter on the touched files and show the output. Do not report fixes as applied while either fails — show the failure and ask how to proceed. Then offer:
+5. After applying any fixes, verify before claiming done: run the project's typecheck gate (`node node_modules/ts7/bin/tsc --noEmit`; `node node_modules/typescript/bin/tsc --noEmit` only where TS7 is absent) and the configured linter on the touched files and show the output. Do not report fixes as applied while either fails — show the failure and ask how to proceed. Then offer:
    - Re-run the review on the same scope to verify nothing regressed
    - Write a learning to GoodMem if a non-obvious gotcha came up during the review
 

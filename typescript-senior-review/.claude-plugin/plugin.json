@@ -1,7 +1,7 @@
 {
   "name": "typescript-senior-review",
   "version": "0.2.0",
-  "description": "Comprehensive TypeScript code review by a senior-developer agent, running on the session model (always the strongest available Claude), backed by a 19-file local TypeScript knowledge base. Reviews quality, type-system correctness, architecture, maintainability, security, performance, error handling, testing, modern feature adoption, and ecosystem fit. Verifies with the tsgo (TypeScript 7) type gate. Returns severity-tagged findings with concrete code rewrites and vault citations.",
+  "description": "Comprehensive TypeScript code review by a senior-developer agent, running on the session model (always the strongest available Claude), backed by a 19-file local TypeScript knowledge base. Reviews quality, type-system correctness, architecture, maintainability, security, performance, error handling, testing, modern feature adoption, and ecosystem fit. Verifies with the GA TypeScript 7 type gate. Returns severity-tagged findings with concrete code rewrites and vault citations.",
   "author": {
     "name": "TheMizeGuy",
     "email": "ben@meipath.com"
